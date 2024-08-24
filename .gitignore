@@ -4,6 +4,9 @@ env/
 .venv/
 .env/
 
+frontend/insta-influence/server.crt
+frontend/insta-influence/server.key
+
 # Python cache files
 __pycache__/
 *.py[cod]
