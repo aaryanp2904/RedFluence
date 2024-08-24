@@ -1,38 +1,113 @@
 .App {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+  width: 80%;
+  margin: auto;
+  overflow: hidden;
+  padding: 20px;
+}
+
+.App h1 {
+  color: #333;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+#input-section {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+#input-section input[type="text"] {
+  width: 70%;
+  padding: 10px;
+  margin-right: 10px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+#headlines-list {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  flex-wrap: wrap;
+  justify-content: space-around;
 }
 
-.App-link {
-  color: #61dafb;
+.headline-option {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.headline-option:hover {
+  background-color: #f0f0f0;
+}
+
+#article-section {
+  background-color: #fff;
+  border-radius: 5px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+#generated-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 20px auto;
+}
+
+#article-content {
+  text-align: justify;
+}
+
+#loading-indicator {
+  text-align: center;
+  font-size: 18px;
+  margin: 20px 0;
+}
+
+#headlines-section {
+  margin-top: 20px;
+}
+
+#article-section button {
+  margin-top: 20px;
+  margin-right: 10px;
+}
+
+.error {
+  color: red;
+  margin: 10px 0;
+}
+
+/* Additional styles for better responsiveness */
+@media (max-width: 768px) {
+  .App {
+    width: 95%;
   }
-  to {
-    transform: rotate(360deg);
+
+  #input-section input[type="text"] {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  button {
+    width: 100%;
   }
 }

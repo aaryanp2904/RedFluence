@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InstaInfluence</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>InstaInfluence</h1>
+        <div id="input-section">
+            <input type="text" id="instagram-url" placeholder="Enter Instagram profile URL">
+            <button id="analyze-btn">Analyze</button>
+        </div>
+        <div id="loading-indicator" style="display: none;">Loading...</div>
+        <div id="headlines-section" style="display: none;">
+            <h2>Choose a Headline:</h2>
+            <div id="headlines-list"></div>
+        </div>
+        <div id="article-section" style="display: none;">
+            <h2 id="chosen-headline"></h2>
+            <img id="generated-image" src="" alt="Generated Image">
+            <div id="article-content"></div>
+            <button id="back-to-headlines">Back to Headlines</button>
+            <button id="share-article">Share Article</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
