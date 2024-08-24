@@ -6,14 +6,21 @@ import requests
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 def generate_headlines(profile_data):
-    interests = ', '.join(profile_data['followees'][:10])  # Use first 10 followees as interests
+    # Extract relevant information from profile_data
+    username = profile_data['username']
+    bio = profile_data['biography']
+    account_type = profile_data['account_type']
+    media_count = profile_data['media_count']
+    
+    # Create a prompt based on the available data
     prompt = f"""
     Generate 4 engaging news article headlines based on the following Instagram profile information:
-    Username: {profile_data['username']}
-    Biography: {profile_data['biography']}
-    Interests: {interests}
+    Username: {username}
+    Biography: {bio}
+    Account Type: {account_type}
+    Number of Posts: {media_count}
     
-    The headlines should be tailored to this user's interests and potentially controversial or sensational.
+    The headlines should be tailored to this user's profile and potentially controversial or sensational.
     """
 
     try:
@@ -31,13 +38,21 @@ def generate_headlines(profile_data):
         raise Exception(f"Error generating headlines: {str(e)}")
 
 def generate_article_and_image(chosen_headline, profile_data):
-    interests = ', '.join(profile_data['followees'][:10])
-    article_prompt = f"""
-    Write a short, engaging news article based on the following headline and tailored to the user's interests:
-    Headline: {chosen_headline}
-    User Interests: {interests}
+    # Extract relevant information from profile_data
+    username = profile_data['username']
+    bio = profile_data['biography']
+    account_type = profile_data['account_type']
+    media_count = profile_data['media_count']
     
-    The article should be approximately 3-4 paragraphs long and written in a style that appeals to the user based on their interests.
+    article_prompt = f"""
+    Write a short, engaging news article based on the following headline and Instagram profile information:
+    Headline: {chosen_headline}
+    Username: {username}
+    Biography: {bio}
+    Account Type: {account_type}
+    Number of Posts: {media_count}
+    
+    The article should be approximately 3-4 paragraphs long and written in a style that relates to the user's Instagram presence.
     """
 
     try:
@@ -52,7 +67,7 @@ def generate_article_and_image(chosen_headline, profile_data):
         article = article_response.choices[0].message.content.strip()
 
         # Generate image using DALL-E
-        image_prompt = f"Create an image for a news article with the headline: {chosen_headline}"
+        image_prompt = f"Create an image for a news article about an Instagram influencer with the headline: {chosen_headline}"
         image_response = client.images.generate(
             model="dall-e-3",
             prompt=image_prompt,
