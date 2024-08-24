@@ -67,4 +67,5 @@ def generate():
 
 if __name__ == '__main__':
     app.run(debug=os.getenv('FLASK_ENV') == 'development',
-            port=int(os.getenv('PORT', 5000)))
+            port=int(os.getenv('PORT', 5000)))# , ssl_context=('server.crt', 'server.key')) 
+    #ssl_context=(os.getenv("SERVER_CRT"), os.getenv("SERVER_KEY")))
