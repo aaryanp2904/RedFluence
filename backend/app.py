@@ -4,9 +4,6 @@ import praw
 import os
 from collections import Counter
 from openai import OpenAI
-import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 import json
 
 app = Flask(__name__)
@@ -214,13 +211,6 @@ def generate_ai_insights(username, clicked_article):
     conversation_history[username] = messages
 
     return insights
-
-def calculate_content_similarity(articles):
-    texts = [article['title'] + " " + article['story'] for article in articles]
-    vectorizer = TfidfVectorizer()
-    tfidf_matrix = vectorizer.fit_transform(texts)
-    cosine_similarities = cosine_similarity(tfidf_matrix, tfidf_matrix)
-    return cosine_similarities[np.triu_indices(cosine_similarities.shape[0], k=1)]
 
 def generate_img_prompt(username, story):
     try:
