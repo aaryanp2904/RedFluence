@@ -7,7 +7,7 @@ function App() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [expandedPost, setExpandedPost] = useState(null);
-  const [aiInsights, setAiInsights] = useState('');
+  const [chatMessages, setChatMessages] = useState([]);
 
   useEffect(() => {
     if (expandedPost) {
@@ -21,7 +21,7 @@ function App() {
     setError('');
     setLoading(true);
     setExpandedPost(null);
-    setAiInsights('');
+    setChatMessages([]);
 
     const eventSource = new EventSource(`http://localhost:5000/get_active_subreddits?username=${username}`);
 
@@ -34,7 +34,7 @@ function App() {
         const articleData = JSON.parse(event.data);
 
         if (articleData.insights) {
-          setAiInsights(articleData.insights)
+          setChatMessages(prevMessages => [...prevMessages, { type: 'ai', content: articleData.insights }]);
         }
         else {
           setSubredditData(prevData => [...prevData, articleData]);
@@ -52,7 +52,8 @@ function App() {
 
   const expandPost = (post) => {
     setExpandedPost(post);
-    trackArticleClick(post);
+    setChatMessages(prevMessages => [...prevMessages, { type: 'user', content: `You clicked on the article "${post.title}"` }]);
+    // trackArticleClick(post);
   };
 
   const trackArticleClick = async (article) => {
@@ -70,16 +71,14 @@ function App() {
       }
 
       const data = await response.json();
-      setAiInsights(aiInsights + "\n" + data.ai_insights);
+      setChatMessages(prevMessages => [...prevMessages, { type: 'ai', content: data.ai_insights }]);
     } catch (error) {
       console.error('Error tracking article click:', error);
-      // setAiInsights('Failed to load AI insights. Please try again.');
     }
   };
 
   const goBack = () => {
     setExpandedPost(null);
-    //setAiInsights('');
   };
 
   return (
@@ -151,7 +150,13 @@ function App() {
         </div>
         <div className="explanation-container">
           <h2>AI Insights</h2>
-          <pre>{aiInsights}</pre>
+          <div className="chat-bubbles">
+            {chatMessages.map((message, index) => (
+              <div key={index} className={`chat-bubble ${message.type}-bubble`}>
+                {message.content}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
