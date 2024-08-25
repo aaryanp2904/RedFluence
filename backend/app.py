@@ -56,8 +56,24 @@ def get_active_subreddits():
             story = generate_story(subreddit, posts)
             image_prompt = generate_img_prompt(story)
             image_url = generate_image(image_prompt)
+            print(story)
+
+            prompt = f"""Given the below story, create a provocative, clickbait reddit post title so that people click on the post but do not make it too
+            flashy or overuse emojis, it still needs to be believable: {story}"""
+
+            response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                    {"role": "system", "content": "You are a clickbait article creator"},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+
+            title = response.choices[0].message.content.strip()
+            
             stories_and_images.append({
                 "subreddit": subreddit,
+                "title": title,
                 "story": story,
                 "image_url": image_url
             })
@@ -72,8 +88,9 @@ def get_active_subreddits():
 def generate_img_prompt(story):
     try:
         prompt = f"""
-        Based on the following story, create a DALL-E image generation prompt that captures the essence of the story. It should not contain any
-        text. The image should be realistic and thought-provoking, suitable for the clickbait article nature of the story. The prompt should be less than 800 characters:
+        Based on the following story, create a DALL-E image generation prompt that captures the essence of the story. It should NOT contain any form of 
+        text or alphabetic characters at all. The image should be realistic and thought-provoking, suitable for the clickbait article nature of the story. 
+        The image should NOT be over the top and should look like a news article image. The prompt should be less than 800 characters:
 
         {story}
         """
@@ -81,7 +98,7 @@ def generate_img_prompt(story):
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a prompt engineer tasked with generating images to match controversial Reddit posts."},
+                {"role": "system", "content": "You are a prompt engineer tasked with generating DALL-E image prompts that make believable images for controversial Reddit posts."},
                 {"role": "user", "content": prompt}
             ]
         )
@@ -101,9 +118,10 @@ def generate_story(subreddit, posts):
         - Their posts: {'\n\n'.join(posts[:5])}  # Limit to first 5 posts for brevity
 
         Generate a reddit post containing a fake story or headline that is either strongly against or strongly
-        supportive of the opinions displayed by this user and their posts on r/{subreddit}. It should
-        be engaging and provocative, like a clickbait article. Feel free to start rumors or create a controversial story about characters or people that are related to
-        this subreddit.
+        supportive of the opinions displayed by this user and their posts on r/{subreddit}. It should be engaging 
+        and provocative, like a clickbait article but not too unbelievable. Feel free to start rumors or create a 
+        controversial story about characters or people that are related to this subreddit. Do not include a title, give
+        me only the post body itself.
         """
 
         response = client.chat.completions.create(
@@ -121,6 +139,7 @@ def generate_story(subreddit, posts):
         return f"A mysterious tale unfolds in the realm of r/{subreddit}."
 
 def generate_image(story):
+    return "https://via.placeholder.com/256x256?text=Image+Unavailable"
     try:
         prompt = f"A surreal and thought-provoking illustration inspired by this reddit post: {story}"
         response = client.images.generate(
