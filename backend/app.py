@@ -1,71 +1,78 @@
-from flask import Flask, request, jsonify, redirect, url_for, session
+from flask import Flask, redirect, request, jsonify
 from flask_cors import CORS
-from content_generator import generate_headlines, generate_article_and_image
-from instagram_analyzer import analyze_instagram_profile, get_instagram_auth_url, get_access_token
-from dotenv import load_dotenv
+import praw
 import os
-
-# Load environment variables
-load_dotenv()
+from collections import Counter
+from openai import OpenAI
 
 app = Flask(__name__)
-app.secret_key = os.getenv('FLASK_SECRET_KEY')  # Set this in your .env file
-CORS(app)
+CORS(app, supports_credentials=True)
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'fallback_secret_key')
 
-# Instagram App credentials
-INSTAGRAM_APP_ID = os.getenv('INSTAGRAM_APP_ID')
-INSTAGRAM_APP_SECRET = os.getenv('INSTAGRAM_APP_SECRET')
-INSTAGRAM_REDIRECT_URI = os.getenv('INSTAGRAM_REDIRECT_URI')
+# Reddit App Credentials
+CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')
+CLIENT_SECRET = os.getenv('REDDIT_CLIENT_SECRET')
+REDIRECT_URI = "http://localhost:5000/callback"
+USER_AGENT = "script:red-influence:v1.0 (by u/LionsBro2907)"
 
-@app.route('/auth/instagram')
-def auth_instagram():
-    auth_url = get_instagram_auth_url(INSTAGRAM_APP_ID, INSTAGRAM_REDIRECT_URI)
-    return redirect(auth_url)
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
-@app.route('/auth/instagram/callback')
-def instagram_callback():
-    code = request.args.get('code')
-    if code:
-        try:
-            access_token = get_access_token(INSTAGRAM_APP_ID, INSTAGRAM_APP_SECRET, INSTAGRAM_REDIRECT_URI, code)
-            session['instagram_access_token'] = access_token
-            return redirect(url_for('index'))  # Redirect to your frontend
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
-    return jsonify({'error': 'Authentication failed'}), 400
+# PRAW instance (without user authentication yet)
+reddit = praw.Reddit(client_id=CLIENT_ID,
+                     client_secret=CLIENT_SECRET,
+                     redirect_uri=REDIRECT_URI,
+                     user_agent=USER_AGENT)
 
-@app.route('/analyze', methods=['POST'])
-def analyze():
-    access_token = session.get('instagram_access_token')
-    if not access_token:
-        return jsonify({'error': 'Not authenticated with Instagram'}), 401
-
-    instagram_url = request.json.get('instagram_url')
-    if not instagram_url:
-        return jsonify({'error': 'No Instagram URL provided'}), 400
-
+@app.route('/get_active_subreddits', methods=['POST'])
+def get_active_subreddits():
+    data = request.json
+    username = data['username']
+    
     try:
-        profile_data = analyze_instagram_profile(access_token, instagram_url)
-        headlines = generate_headlines(profile_data)
-        return jsonify({'profile_data': profile_data, 'headlines': headlines})
+        user = reddit.redditor(username)
+        subreddits = []
+        
+        # Collect subreddits from user's recent comments and submissions
+        for comment in user.comments.new(limit=100):
+            subreddits.append(comment.subreddit.display_name)
+        for submission in user.submissions.new(limit=100):
+            subreddits.append(submission.subreddit.display_name)
+        
+        # Count occurrences and get the top 5 most active subreddits
+        most_active = Counter(subreddits).most_common(5)
+        top_subreddits = [subreddit for subreddit, _ in most_active]
+
+        # Generate images for each subreddit
+        images = []
+        for subreddit in top_subreddits:
+            prompt = f"An abstract representation of the {subreddit} subreddit"
+            image_url = generate_image(prompt)
+            images.append({"subreddit": subreddit, "image_url": image_url})
+
+        return jsonify({
+            'subreddits': top_subreddits,
+            'images': images
+        })
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), 400
 
-@app.route('/generate', methods=['POST'])
-def generate():
-    chosen_headline = request.json.get('chosen_headline')
-    profile_data = request.json.get('profile_data')
-
-    if not chosen_headline or not profile_data:
-        return jsonify({'error': 'Missing headline or profile data'}), 400
-
+def generate_image(prompt):
     try:
-        article, image_url = generate_article_and_image(chosen_headline, profile_data)
-        return jsonify({'article': article, 'image_url': image_url})
+        response = client.images.generate(
+            model="dall-e-2",
+            prompt=prompt,
+            size="256x256",
+            quality="standard",
+            n=1,
+        )
+        image_url = response.data[0].url
+        print(image_url)
+        return image_url
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"Error generating image: {e}")
+        # Return a placeholder image URL
+        return "https://via.placeholder.com/256x256?text=Image+Unavailable"
+
 
 if __name__ == '__main__':
-    app.run(debug=os.getenv('FLASK_ENV') == 'development',
-            port=int(os.getenv('PORT', 5000)))# , ssl_context=('server.crt', 'server.key')) 
-    #ssl_context=(os.getenv("SERVER_CRT"), os.getenv("SERVER_KEY")))
+    app.run(debug=True)
