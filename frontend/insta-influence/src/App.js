@@ -1,143 +1,69 @@
-// import React, { useState } from 'react';
-// import './App.css';
-
-// function App() {
-//   const [username, setUsername] = useState('');
-//   const [subreddits, setSubreddits] = useState([]);
-//   const [storiesAndImages, setStoriesAndImages] = useState([]);
-//   const [error, setError] = useState('');
-//   const [loading, setLoading] = useState(false);
-//   const [expandedPost, setExpandedPost] = useState(null); // For tracking expanded post
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     setSubreddits([]);
-//     setStoriesAndImages([]);
-//     setError('');
-//     setLoading(true);
-
-//     try {
-//       const response = await fetch('http://localhost:5000/get_active_subreddits', {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({ username }),
-//       });
-
-//       if (!response.ok) {
-//         throw new Error('Network response was not ok');
-//       }
-
-//       const data = await response.json();
-//       setSubreddits(data.subreddits || []);
-//       setStoriesAndImages(data.stories_and_images || []);
-//     } catch (error) {
-//       console.error('Error:', error);
-//       setError('An error occurred while fetching data.');
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const toggleExpandPost = (index) => {
-//     if (expandedPost === index) {
-//       setExpandedPost(null); // Collapse if the same post is clicked again
-//     } else {
-//       setExpandedPost(index); // Expand the selected post
-//     }
-//   };
-
-//   return (
-//     <div className="App">
-//       <h1>Red-Fluence</h1>
-//       <form onSubmit={handleSubmit} className="username-form">
-//         <input
-//           type="text"
-//           value={username}
-//           onChange={(e) => setUsername(e.target.value)}
-//           placeholder="Enter username..."
-//           required
-//         />
-//         <button type="submit" disabled={loading}>
-//           {loading ? 'Loading...' : 'Submit'}
-//         </button>
-//       </form>
-//       <div className="content-container">
-//         <div className="subreddit-container">
-//           {error && <p className="error">{error}</p>}
-//           {subreddits.length > 0 && (
-//             <div className="scrollable-content">
-//               {storiesAndImages.map((item, index) => (
-//                 <div
-//                   key={index}
-//                   className={`subreddit-item ${expandedPost === index ? 'expanded' : ''}`}
-//                   onClick={() => toggleExpandPost(index)}
-//                 >
-//                   <div className="post-header">
-//                     <p className="subreddit-name">r/{item.subreddit}</p>
-//                     <p className="post-title">{item.title}</p>
-//                   </div>
-//                   <img
-//                     src={item.image_url}
-//                     alt={`${item.subreddit} representation`}
-//                     className="subreddit-image"
-//                   />
-//                   {expandedPost === index && (
-//                     <div className="post-details">
-//                       <p>{item.story}</p>
-//                       {/* Add vote/comment/share buttons */}
-//                       <div className="post-actions">
-//                         <div className="vote-buttons">
-//                           <button>⬆️</button>
-//                           <span>{item.votes}</span>
-//                           <button>⬇️</button>
-//                         </div>
-//                         <button className="comment-button">💬 {item.comments}</button>
-//                         <button className="share-button">🔗</button>
-//                       </div>
-//                     </div>
-//                   )}
-//                 </div>
-//               ))}
-//             </div>
-//           )}
-//         </div>
-//         <div className="explanation-container">
-//           <p>This section uses the get_explanation API of the :5000 backend to get data for now</p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default App;
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
 function App() {
   const [username, setUsername] = useState('');
-  const [subreddits, setSubreddits] = useState([]);
-  const [storiesAndImages, setStoriesAndImages] = useState([]);
+  const [subredditData, setSubredditData] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [expandedPost, setExpandedPost] = useState(null); // Track the expanded post
+  const [expandedPost, setExpandedPost] = useState(null);
+  const [aiInsights, setAiInsights] = useState('');
+
+  useEffect(() => {
+    if (expandedPost) {
+      trackArticleClick(expandedPost);
+    }
+  }, [expandedPost]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubreddits([]);
-    setStoriesAndImages([]);
+    setSubredditData([]);
     setError('');
     setLoading(true);
+    setExpandedPost(null);
+    setAiInsights('');
 
+    const eventSource = new EventSource(`http://localhost:5000/get_active_subreddits?username=${username}`);
+
+    eventSource.onmessage = (event) => {
+      if (event.data === "DONE") {
+        eventSource.close();
+        setLoading(false);
+      }         
+      else {
+        const articleData = JSON.parse(event.data);
+
+        if (articleData.insights) {
+          setAiInsights(articleData.insights)
+        }
+        else {
+          setSubredditData(prevData => [...prevData, articleData]);
+        }
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error('EventSource failed:', error);
+      setError('An error occurred while fetching data.');
+      setLoading(false);
+      eventSource.close();
+    };
+  };
+
+  const expandPost = (post) => {
+    setExpandedPost(post);
+    trackArticleClick(post);
+  };
+
+  const trackArticleClick = async (article) => {
     try {
-      const response = await fetch('http://localhost:5000/get_active_subreddits', {
+      // setAiInsights('Loading AI insights...');
+      const response = await fetch('http://localhost:5000/track_article_click', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username, article }),
       });
 
       if (!response.ok) {
@@ -145,22 +71,16 @@ function App() {
       }
 
       const data = await response.json();
-      setSubreddits(data.subreddits || []);
-      setStoriesAndImages(data.stories_and_images || []);
+      // setAiInsights(data.ai_insights);
     } catch (error) {
-      console.error('Error:', error);
-      setError('An error occurred while fetching data.');
-    } finally {
-      setLoading(false);
+      console.error('Error tracking article click:', error);
+      // setAiInsights('Failed to load AI insights. Please try again.');
     }
   };
 
-  const expandPost = (index) => {
-    setExpandedPost(index);
-  };
-
   const goBack = () => {
-    setExpandedPost(null); // Reset the expanded post to show the list again
+    setExpandedPost(null);
+    //setAiInsights('');
   };
 
   return (
@@ -181,14 +101,14 @@ function App() {
       <div className="content-container">
         <div className="subreddit-container">
           {error && <p className="error">{error}</p>}
-          {subreddits.length > 0 && (
+          {subredditData.length > 0 && (
             <div className="scrollable-content">
               {expandedPost === null ? (
-                storiesAndImages.map((item, index) => (
+                subredditData.map((item, index) => (
                   <div
                     key={index}
                     className="subreddit-item"
-                    onClick={() => expandPost(index)}
+                    onClick={() => expandPost(item)}
                   >
                     <div className="post-header">
                       <p className="subreddit-name">r/{item.subreddit}</p>
@@ -207,21 +127,21 @@ function App() {
                     ← Back
                   </button>
                   <div className="post-details-expanded">
-                    <h3>r/{storiesAndImages[expandedPost].subreddit}</h3>
-                    <h4>{storiesAndImages[expandedPost].title}</h4>
+                    <h3>r/{expandedPost.subreddit}</h3>
+                    <h4>{expandedPost.title}</h4>
                     <img
-                      src={storiesAndImages[expandedPost].image_url}
-                      alt={`${storiesAndImages[expandedPost].subreddit} representation`}
+                      src={expandedPost.image_url}
+                      alt={`${expandedPost.subreddit} representation`}
                       className="subreddit-image-expanded"
                     />
-                    <p>{storiesAndImages[expandedPost].story}</p>
+                    <p>{expandedPost.story}</p>
                     <div className="post-actions">
                       <div className="vote-buttons">
                         <button>⬆️</button>
-                        <span>{storiesAndImages[expandedPost].votes}</span>
+                        <span>{expandedPost.votes}</span>
                         <button>⬇️</button>
                       </div>
-                      <button className="comment-button">💬 {storiesAndImages[expandedPost].comments}</button>
+                      <button className="comment-button">💬 {expandedPost.comments}</button>
                       <button className="share-button">🔗</button>
                     </div>
                   </div>
@@ -231,7 +151,8 @@ function App() {
           )}
         </div>
         <div className="explanation-container">
-          <p>This section uses the get_explanation API of the :5000 backend to get data for now</p>
+          <h2>AI Insights</h2>
+          <pre>{aiInsights}</pre>
         </div>
       </div>
     </div>
