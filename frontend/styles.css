@@ -18,27 +18,31 @@ h1 {
     text-align: center;
 }
 
-#input-section {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-#instagram-url {
-    width: 70%;
-    padding: 10px;
-    margin-right: 10px;
-}
-
 button {
     padding: 10px 20px;
     background-color: #007bff;
     color: #fff;
     border: none;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 button:hover {
     background-color: #0056b3;
+}
+
+#login-btn {
+    display: block;
+    margin: 20px auto;
+    font-size: 16px;
+}
+
+#user-info {
+    background-color: #fff;
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 #headlines-list {
@@ -51,14 +55,17 @@ button:hover {
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 5px;
-    padding: 10px;
+    padding: 15px;
     margin: 10px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
+    flex-basis: calc(50% - 20px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .headline-option:hover {
     background-color: #f0f0f0;
+    transform: translateY(-3px);
 }
 
 #article-section {
@@ -66,6 +73,7 @@ button:hover {
     border-radius: 5px;
     padding: 20px;
     margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 #generated-image {
@@ -73,10 +81,40 @@ button:hover {
     height: auto;
     display: block;
     margin: 20px auto;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 #article-content {
     text-align: justify;
+    margin-bottom: 20px;
+}
+
+#sentiment-analysis {
+    font-style: italic;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+#hashtags-container {
+    margin-bottom: 20px;
+}
+
+.hashtag {
+    display: inline-block;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    background-color: #e0e0e0;
+    border-radius: 15px;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.hashtag:hover {
+    background-color: #d0d0d0;
 }
 
 #loading-indicator {
@@ -89,8 +127,7 @@ button:hover {
     margin-top: 20px;
 }
 
-#back-to-headlines,
-#share-article {
+#back-to-headlines, #share-article {
     margin-top: 20px;
     margin-right: 10px;
 }
@@ -101,12 +138,12 @@ button:hover {
         width: 95%;
     }
 
-    #instagram-url {
-        width: 100%;
-        margin-bottom: 10px;
+    .headline-option {
+        flex-basis: 100%;
     }
 
     button {
         width: 100%;
+        margin-bottom: 10px;
     }
 }

@@ -4,14 +4,14 @@ import './App.css';
 function App() {
   const [username, setUsername] = useState('');
   const [subreddits, setSubreddits] = useState([]);
-  const [images, setImages] = useState([]);
+  const [storiesAndImages, setStoriesAndImages] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubreddits([]);
-    setImages([]);
+    setStoriesAndImages([]);
     setError('');
     setLoading(true);
 
@@ -29,8 +29,8 @@ function App() {
       }
 
       const data = await response.json();
-      setSubreddits(data.subreddits);
-      setImages(data.images);
+      setSubreddits(data.subreddits || []);
+      setStoriesAndImages(data.stories_and_images || []);
     } catch (error) {
       console.error('Error:', error);
       setError('An error occurred while fetching data.');
@@ -59,9 +59,10 @@ function App() {
         <div>
           <h2>Most Active Subreddits:</h2>
           <ul className="subreddit-list">
-            {images.map((item, index) => (
+            {storiesAndImages.map((item, index) => (
               <li key={index}>
                 <h3>{item.subreddit}</h3>
+                <p>{item.story}</p>
                 {item.image_url ? (
                   <img src={item.image_url} alt={`${item.subreddit} representation`} />
                 ) : (

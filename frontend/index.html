@@ -9,10 +9,8 @@
 <body>
     <div class="container">
         <h1>InstaInfluence</h1>
-        <div id="input-section">
-            <input type="text" id="instagram-url" placeholder="Enter Instagram profile URL">
-            <button id="analyze-btn">Analyze</button>
-        </div>
+        <button id="login-btn" style="display: none;">Login with Instagram</button>
+        <div id="user-info" style="display: none;"></div>
         <div id="loading-indicator" style="display: none;">Loading...</div>
         <div id="headlines-section" style="display: none;">
             <h2>Choose a Headline:</h2>
@@ -22,6 +20,8 @@
             <h2 id="chosen-headline"></h2>
             <img id="generated-image" src="" alt="Generated Image">
             <div id="article-content"></div>
+            <div id="sentiment-analysis"></div>
+            <div id="hashtags-container"></div>
             <button id="back-to-headlines">Back to Headlines</button>
             <button id="share-article">Share Article</button>
         </div>
