@@ -173,18 +173,7 @@ h1 {
 
 .explanation-container {
   flex: 1;
-  height: 80vh;
-  border: 1px solid black;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: left;
-}
-
-.explanation-container {
-  flex: 1;
-  height: 80vh;
+  height: 80vh; /* This ensures it takes up a fixed amount of height */
   border: 1px solid #343536;
   padding: 20px;
   display: flex;
@@ -192,8 +181,21 @@ h1 {
   align-items: flex-start;
   text-align: left;
   background-color: #1a1a1b;
-  overflow-y: auto;
+  overflow-y: auto; /* Allows scrolling */
 }
+
+.explanation-container pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background-color: #272729;
+  padding: 10px;
+  border-radius: 4px;
+  width: 100%;
+  color: #d7dadc;
+  max-height: 100%; /* Ensures that the pre-formatted content stays within the container */
+  overflow-y: auto; /* Makes the pre tag scrollable if its content overflows */
+}
+
 
 .explanation-container h2 {
   margin-bottom: 15px;

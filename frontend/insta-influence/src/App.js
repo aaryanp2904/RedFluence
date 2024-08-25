@@ -57,7 +57,6 @@ function App() {
 
   const trackArticleClick = async (article) => {
     try {
-      // setAiInsights('Loading AI insights...');
       const response = await fetch('http://localhost:5000/track_article_click', {
         method: 'POST',
         headers: {
@@ -71,7 +70,7 @@ function App() {
       }
 
       const data = await response.json();
-      // setAiInsights(data.ai_insights);
+      setAiInsights(aiInsights + "\n" + data.ai_insights);
     } catch (error) {
       console.error('Error tracking article click:', error);
       // setAiInsights('Failed to load AI insights. Please try again.');
