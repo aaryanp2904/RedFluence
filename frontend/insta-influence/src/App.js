@@ -23,7 +23,7 @@ function App() {
     setExpandedPost(null);
     setChatMessages([]);
 
-    const eventSource = new EventSource(process.env.BACKEND_URL+`/get_active_subreddits?username=${username}`);
+    const eventSource = new EventSource("http://localhost:5000"+`/get_active_subreddits?username=${username}`);
 
     eventSource.onmessage = (event) => {
       if (event.data === "DONE") {
@@ -58,7 +58,7 @@ function App() {
 
   const trackArticleClick = async (article) => {
     try {
-      const response = await fetch(process.env.BACKEND_URL+'/track_article_click', {
+      const response = await fetch("http://localhost:5000/track_article_click", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
