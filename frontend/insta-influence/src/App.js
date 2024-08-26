@@ -23,13 +23,13 @@ function App() {
     setExpandedPost(null);
     setChatMessages([]);
 
-    const eventSource = new EventSource("http://localhost:5000"+`/get_active_subreddits?username=${username}`);
+    const eventSource = new EventSource("http://localhost:5000" + `/get_active_subreddits?username=${username}`);
 
     eventSource.onmessage = (event) => {
       if (event.data === "DONE") {
         eventSource.close();
         setLoading(false);
-      }         
+      }
       else {
         const articleData = JSON.parse(event.data);
 
@@ -98,25 +98,40 @@ function App() {
       </form>
       <div className="content-container">
         <div className="subreddit-container">
+          <div className="reddit-navbar">
+            <div className="navbar-left">
+              <img src="https://www.redditstatic.com/avatars/defaults/v2/avatar_default_0.png" alt="User" className="user-avatar" />
+            </div>
+            <div className="navbar-center">Home</div>
+            <div className="navbar-right">
+              <button className="menu-button">☰</button>
+            </div>
+          </div>
           {error && <p className="error">{error}</p>}
           {subredditData.length > 0 && (
             <div className="scrollable-content">
               {expandedPost === null ? (
                 subredditData.map((item, index) => (
-                  <div
-                    key={index}
-                    className="subreddit-item"
-                    onClick={() => expandPost(item)}
-                  >
+                  <div key={index} className="reddit-post">
                     <div className="post-header">
+                      <img src="https://www.redditstatic.com/avatars/defaults/v2/avatar_default_1.png" alt="Subreddit icon" className="subreddit-icon" />
                       <p className="subreddit-name">r/{item.subreddit}</p>
-                      <p className="post-title">{item.title}</p>
+                      <p className="post-meta">• Posted by u/FakeUser • 1h</p>
                     </div>
+                    <p className="post-title" onClick={() => expandPost(item)}>{item.title}</p>
                     <img
                       src={item.image_url}
                       alt={`${item.subreddit} representation`}
-                      className="subreddit-image"
+                      className="post-image"
+                      onClick={() => expandPost(item)}
                     />
+                    <div className="post-actions">
+                      <button className="vote-button upvote">⬆️</button>
+                      <span className="vote-count">{item.votes}</span>
+                      <button className="vote-button downvote">⬇️</button>
+                      <button className="action-button">💬 {item.comments}</button>
+                      <button className="action-button">Share</button>
+                    </div>
                   </div>
                 ))
               ) : (

@@ -217,7 +217,8 @@ def generate_img_prompt(username, story):
         prompt = f"""
         Based on the following story, create a DALL-E image generation prompt that captures the essence of the story. It should NOT contain any form of 
         text or alphabetic characters at all. The image should be realistic and thought-provoking, suitable for the clickbait article nature of the story. 
-        The image should NOT be over the top and should look like a news article image. The prompt should be less than 800 characters:
+        The image should NOT be over the top and should look like a news article image. The prompt should be less than 800 characters and should be in line with
+        the safety system of DALL-E and ChatGPT:
 
         {story}
         """
